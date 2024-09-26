@@ -1,0 +1,117 @@
+---
+title: "Assignment02"
+author: "Dingyuan Gu"
+date: "2024-09-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+
+## Load packages
+
+
+```{r load}
+library(tidyverse)
+library(Stat2Data)
+data("Hawks")
+head(Hawks)
+```
+
+
+# 1.Data Wrangling
+
+## 1.1 Select and filter
+
+### 1.1 (Q1)
+```{r}
+hSF<-Hawks %>% filter(Species== "RT" & Weight>=1000) %>% select(Wing, Weight, Tail)
+print(hSF)
+```
+### 1.1 (Q2)
+
+#### How many variables does the data frame hSF have?
+
+hSF have 3 variables.
+
+
+#### What would you say to communicate this information to a Machine Learning practitioner?
+
+This data frame has 3 features, namely Wing, Weight, and Tail.
+
+#### How many examples/observations/cases does the data frame hSF have?
+
+398
+
+## 1.2 The arrange function
+
+### 1.2 (Q1)
+```{R}
+hSF %>% arrange(Wing) %>% head(5)
+```
+## 1.3 Join and rename functions
+
+### 1.3 (Q1)
+
+```{r}
+hawkSpeciesNameCodes <- data.frame(
+  species_code = c("CH", "RT", "SS"),
+  species_name_full = c("Cooper's", "Red-tailed", "Sharp-shinned")
+)
+print(hawkSpeciesNameCodes)
+```
+
+### 1.3 (Q2)
+
+```{r}
+hawksFullName <- Hawks %>% select(Month, Day, Year, CaptureTime, ReleaseTime, BandNumber, Species) %>% left_join(hawkSpeciesNameCodes %>% rename(Species=species_code)) %>% left_join(Hawks)  %>% select(-Species) %>% rename(Species=species_name_full)
+print(hawksFullName)
+```
+
+### 1.3 (Q3)
+
+```{r}
+print(hawksFullName %>% select(Species, Wing, Weight) %>% head(7))
+```
+
+## 1.4 The mutate function
+
+### 1.4 (Q1)
+
+```{r}
+hawksWithBMI<- Hawks %>% mutate(bird_BMI=1000* Weight/(Wing^2)) %>% select(Species, bird_BMI) %>% arrange(desc(bird_BMI))
+print(hawksWithBMI)
+```
+
+## 1.5 Summarize and group-by functions
+
+### 1.5 (Q1)
+
+```{r}
+hawksFullName %>% group_by(Species) %>% summarise(num_rows=n(), mn_wing=mean(Wing, na.rm=TRUE), nd_wing=median(Wing, na.rm=TRUE), , t_mn_wing=mean(Wing, trim=0.1, na.rm = TRUE), b_wt_ratio=max(Wing/Tail, na.rm=TRUE))
+```
+
+### 1.5 (Q1)
+
+```{r}
+Hawks %>%
+  group_by(Species) %>%
+  select(Wing, Weight, Culmen, Hallux, Tail, StandardTail, Tarsus, Crop) %>%
+  summarise(across(everything(), ~ sum(is.na(.x))))
+```
+
+
+
+
+
+
+
+
+
+
+
+
