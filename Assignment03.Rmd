@@ -1,0 +1,36 @@
+---
+title: "Assignment03"
+author: "levitt"
+date: "2024-09-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+### Load packages
+```{r}
+library(tidyverse)
+library(Stat2Data)
+data("Hawks")
+```
+
+
+## 1. Visualisation
+
+### 1 (Q1)
+
+```{r}
+hawksSmall<-drop_na(select(Hawks,Age,Day,Month,Year,CaptureTime,Species,Wing,Weight,Tail))
+dim(hawksSmall)
+head(hawksSmall,5)
+```
+
+### 1 (Q2)
+
+```{r}
+univar_plot1<-ggplot(data=hawksSmall,aes(x=Weight))+xlab("Weight")
+univar_plot1+geom_histogram(binwidth = 10)+ylab("Count")
+```
