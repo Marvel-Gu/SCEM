@@ -34,3 +34,242 @@ head(hawksSmall,5)
 univar_plot1<-ggplot(data=hawksSmall,aes(x=Weight))+xlab("Weight")
 univar_plot1+geom_histogram(binwidth = 10)+ylab("Count")
 ```
+
+### 1 (Q3)
+
+```{r}
+univar_plot2<-ggplot(data=hawksSmall,aes(x=Tail))+xlab("Tail length")
+univar_plot2+geom_histogram(binwidth =1)+ylab("Count")
+univar_plot2+geom_density(adjust=0.5)
+univar_plot2+geom_density(adjust=2)
+```
+
+### 1 (Q4)
+
+```{r}
+ggplot(data=hawksSmall, aes(x=Tail,color=Species))+ geom_density(adjust=2)+ theme_bw() + xlab("Tail length") + ylab("Count")
+```
+
+### 1 (Q5)
+
+```{r}
+ggplot(data=hawksSmall, aes(x=Tail,y=Species,fill=Species))+ geom_violin()+ theme_bw() + xlab("Tail (mm)")+ ylab("Density")
+```
+
+### 1 (Q6)
+
+```{r}
+plot3<- ggplot(data=hawksSmall, aes(x=Tail, y=Weight)) + xlab("Tail (mm)") + ylab("Weight (mm)")
+plot3+geom_point(aes(color=Species, shape=Species))
+```
+
+#### Aesthetics
+
+Tail -> horizontal position.
+Weight -> vertical position.
+Species -> color.
+Species -> shape.
+
+#### glyphs
+
+CH -> circle
+RT -> triangle
+SS -> square
+
+#### visual cues
+
+The plot uses **color, shape, and position** as primary visual cues to represent different species and their corresponding data points.
+
+### 1 (Q7)
+
+```{r}
+plot3+geom_point(aes(color = Species))+facet_wrap(~Species, scales = "free_x")+geom_smooth(method ="lm", aes(color=Species))
+```
+
+
+
+
+
+
+
+
+#### visual cues
+
+The visual cues in this plot include faceting, color, position, and trend lines with confidence intervals to compare relationships between tail length and weight for each species.
+
+
+
+#### relationship
+
+There is a general positive relationship between the hawks' tail lengths and their weights. However, the strength of this relationship varies among species, with the RT species showing the most consistent correlation. The relationship for SS is less pronounced due to the smaller range of values.
+
+
+### 1 (Q8)
+```{r}
+hawksSmall%>% select(Weight, Tail) %>% arrange(desc(Weight))%>%head(1)
+```
+
+
+
+
+```{r}
+plot3+geom_point(aes(color=Species))+ 
+  geom_curve(x=196, xend=196, y=1800, yend=2030, arrow=arrow(length=unit(0.1, 'cm')), curvature=0.5) + 
+  geom_text(x=196, y=1800, label="heaviest hawk")
+```
+
+
+## 2. Finite probability spaces
+
+### 2.1 (Q1)
+
+$$
+P=\left ( 0.3  \right ) ^{z}\times \left ( 0.7  \right ) ^{22-z}
+$$
+### 2.1 (Q2)
+
+$$
+P(X=z)=\binom{n}{z} (0.3)^{z}\times(0.7)^{n-z}, n=22
+$$
+```{r}
+prob_red_spheres <- function(z) {
+  n <- 22
+  p <- 3/10  
+  
+  prob <- choose(n, z) * (p^z) * ((1 - p)^(n - z))
+  
+  return(prob)
+}
+
+prob_red_spheres(10)
+```
+
+### 2.1 (Q3)
+
+```{r}
+prob_by_num_reds<-data.frame(
+  num_reds=c(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22)
+)
+prob_by_num_reds$prob <- choose(22, prob_by_num_reds$num_reds) * (0.3^prob_by_num_reds$num_reds) * ((0.7)^(22 - prob_by_num_reds$num_reds))
+head(prob_by_num_reds,3)
+```
+
+
+### 2.1 (Q4)
+
+```{r}
+plot4<-ggplot(data=prob_by_num_reds,aes(x=num_reds,y=prob))+geom_line()
+plot4+xlab("Number of reds")+ylab("Probability")
+```
+
+### 2.1 (Q5)
+
+```{r}
+itermap <- function(.x, .f) {
+ result <- list()
+ for (item in .x) {
+ result <- c(result, list(.f(item)))
+ }
+ return(result)
+}
+
+
+num_trials<-1000 # set the number of trials
+set.seed(0) # set the random seed
+sampling_with_replacement_simulation<-data.frame(trial=1:num_trials) %>% mutate(sample_balls = itermap(.x=trial, function(x){sample(10,22, replace = TRUE)}),
+    num_reds = map_int(sample_balls, function(sample) sum(sample <= 3)))
+print(sampling_with_replacement_simulation)
+```
+
+### 2.1 (Q6)
+
+```{r}
+itermap_dbl <- function(.x, .f) {
+ result <- numeric(length(.x))
+ for (i in 1:length(.x)) {
+ result[i] <- .f(.x[[i]])
+ }
+ return(result)
+}
+
+num_reds_in_simulation<-sampling_with_replacement_simulation %>% pull(num_reds) 
+# we extract a vector corresponding to the number of reds in each trial
+prob_by_num_reds<-prob_by_num_reds %>% mutate(predicted_prob=itermap_dbl(.x=num_reds, function(.x) sum(num_reds_in_simulation==.x))/num_trials)
+print(prob_by_num_reds)
+```
+
+### 2.1 (Q7)
+
+```{r}
+prob_by_num_reds %>% rename(TheoreticalProbability=prob,EstimatedProbability=predicted_prob) %>% ggplot() + geom_line(aes(x=num_reds, y=TheoreticalProbability)) + geom_line(aes(x=num_reds, y=EstimatedProbability), linetype='dashed') + geom_point(aes(x=num_reds, y=EstimatedProbability)) + theme_bw() + xlab("Number of reds") + ylab("Probabilities")
+
+```
+
+## 2.2 Sampling without replacement
+
+### 2.2 (Q1)
+
+```{r}
+
+set.seed(66)
+num_trials <- 1000
+sample_size <- 10
+
+bag <- c(rep("red", 50), rep("blue", 30), rep("green", 20))
+
+perform_trial <- function() {
+  sample <- sample(bag, sample_size, replace = FALSE)
+  
+  red_count <- sum(sample == "red")
+  blue_count <- sum(sample == "blue")
+  green_count <- sum(sample == "green")
+
+  return(list(red = red_count, blue = blue_count, green = green_count))
+}
+
+samples <- itermap(1:num_trials, function(x) perform_trial())
+
+min_colors <- itermap_dbl(samples, function(sample_counts) {
+
+  red <- sample_counts$red
+  blue <- sample_counts$blue
+  green <- sample_counts$green
+  return(min(red, blue, green))
+})
+
+missing_color_trials <- sum(min_colors == 0)
+probability_missing_colors <- missing_color_trials / num_trials
+
+cat("Probability that one or more colors are missing:", probability_missing_colors, "\n")
+```
+
+### 2.2 (Q2)
+
+```{r}
+all<-choose(100,10)
+miss1<-choose(50,10)+choose(30,10)+choose(20,10)
+miss2<-choose(80,10)+choose(70,10)+choose(50,10)
+p=(miss1+miss2)/all
+print(p)
+```
+In the case of a random seed of 66, the deviation of 1000 simulations is about 2.3%.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
