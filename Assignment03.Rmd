@@ -126,6 +126,7 @@ plot3+geom_point(aes(color=Species))+
 $$
 P=\left ( 0.3  \right ) ^{z}\times \left ( 0.7  \right ) ^{22-z}
 $$
+
 ### 2.1 (Q2)
 
 $$
@@ -173,17 +174,6 @@ itermap <- function(.x, .f) {
  return(result)
 }
 
-
-num_trials<-1000 # set the number of trials
-set.seed(0) # set the random seed
-sampling_with_replacement_simulation<-data.frame(trial=1:num_trials) %>% mutate(sample_balls = itermap(.x=trial, function(x){sample(10,22, replace = TRUE)}),
-    num_reds = map_int(sample_balls, function(sample) sum(sample <= 3)))
-print(sampling_with_replacement_simulation)
-```
-
-### 2.1 (Q6)
-
-```{r}
 itermap_dbl <- function(.x, .f) {
  result <- numeric(length(.x))
  for (i in 1:length(.x)) {
@@ -191,6 +181,18 @@ itermap_dbl <- function(.x, .f) {
  }
  return(result)
 }
+
+
+num_trials<-1000 # set the number of trials
+set.seed(0) # set the random seed
+sampling_with_replacement_simulation<-data.frame(trial=1:num_trials) %>% mutate(sample_balls = itermap(.x=trial, function(x){sample(10,22, replace = TRUE)}),
+    num_reds = itermap_dbl(.x=sample_balls, function(.x){sum(.x <= 3)}))
+print(sampling_with_replacement_simulation)
+```
+
+### 2.1 (Q6)
+
+```{r}
 
 num_reds_in_simulation<-sampling_with_replacement_simulation %>% pull(num_reds) 
 # we extract a vector corresponding to the number of reds in each trial
