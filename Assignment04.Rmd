@@ -163,10 +163,7 @@ prob_red_spheres<-function(z){
 num_trials<-1000 # set the number of trials 
 set.seed(0) # set the random seed 
  
-num_reds_in_simulation <- data.frame(trial=1:num_trials) %>% 
-  mutate(sample_balls = map(.x=trial, ~sample(10,22, replace = TRUE))) %>%  
-  mutate(num_reds = map_dbl( .x=sample_balls, ~sum(.x<=3) ) ) %>%  
-  pull(num_reds)  
+num_reds_in_simulation <- data.frame(trial=1:num_trials) %>% mutate(sample_balls = map(.x=trial, ~sample(10,22, replace = TRUE))) %>%  mutate(num_reds = map_dbl( .x=sample_balls, ~sum(.x<=3) ) ) %>%  pull(num_reds)  
  
 prob_by_num_reds <- data.frame(num_reds=seq(22)) %>%  
   mutate(TheoreticalProbability=prob_red_spheres(num_reds)) %>% mutate(EstimatedProbability=map_dbl(.x=num_reds,~sum(num_reds_in_simulation==.x))/num_trials) 
@@ -179,6 +176,102 @@ prob_by_num_reds %>%pivot_longer(cols=c("EstimatedProbability","TheoreticalProba
   geom_line(aes(linetype=Type, color=Type)) + geom_point(aes(color=Type
  )) + scale_linetype_manual(values = c("solid", "dashed"))+ theme_bw() + xlab("Number of reds") + ylab("Probabilities")
 ```
+## 2. Bayes theorem 
+
+### 2.1 (Q1)
+
+```{r}
+p_A<-0.9 
+p_B_given_A<-0.8 
+p_not_B_given_not_A<-0.75 
+p_B<-p_B_given_A*p_A+(1-p_not_B_given_not_A)*(1-p_A) 
+p_A_given_B<-p_B_given_A*p_A/p_B 
+p_A_given_B 
+```
+
+### 2.2 (Q1)
+
+#### 1
+
+$P(A|B)=1$
+
+#### 2
+
+$P(A|B)=0$
+
+Note that this also holds for the case ℙ(𝐴 ∩ 𝐵) = 0
+
+#### 3
+
+$P(A|B)=1$
+
+#### 4
+
+$P(A|\Omega)=\frac{P(A\cap \Omega)}{P(\Omega)} =\frac{P(A)}{1}=P(A) $
+
+#### 5
+
+$P(A\cap B\cap C)=P(A|B\cap C)\cdot P(B\cap C)=P(A|B\cap C)\cdot P(B|C)\cdot P(C)$
+
+$P(A\cap B\cap C)=P(B\cap A\cap C)=P(B|A\cap C)\cdot P(A\cap C)=P(B|A\cap C)\cdot P(A|C)\cdot P(C)$
+
+#### 6
+
+According to question 5:
+$\frac{P(B|A\cap C)\cdot P(A|C)}{P(B|C)} =\frac{P(A\cap B\cap C)}{P(C)} \cdot \frac{1}{P(B|C)}= \frac{P(A\cap B\cap C)}{P(C)} \cdot \frac{P(C) \cdot P(A|B \cap C)}{P(A\cap B\cap C)}=P(A|B \cap C)$
+
+### 2.2 (Q2)
+
+$0.7 \cdot 0.2+0.9 \cdot 0.8=0.86$
+
+
+### 2.3 (Q1)
+
+$P(A)+P(B)+P(C)= \frac{1}{2}$
+![](pic/Ass04_01.png)
+
+### 2.4 (Q1)
+
+![](pic/Ass04_02.png){width=50%}
+![](pic/Ass04_03.png){width=50%}
+### 2.4 (Q2)
+
+```{r}
+n <- 5000 
+df <- data.frame( door_for_car = sample(3, n, replace=TRUE),  
+                  initial_door_chosen_by_contestant = sample(3, n, replace=TRUE)) 
+ 
+host_selection <- function(door_car, door_contestant){  
+  # door_car, door_contestant are two numbers 
+  if(door_car!=door_contestant){ 
+    # choose the other door which reveals a  a goat.  
+    return (6-door_car-door_contestant)  
+  } else { 
+    # choose one of the other two doors 
+    i <- sample(2,1) 
+    if (door_car==1) return (i+1) 
+    if (door_car==3) return (i) 
+    if (door_car==2){ 
+      if (i==1){ return (1) } 
+      if (i==2){ return (3) } 
+    } 
+  } 
+} 
+ 
+df <- df %>% mutate( 
+  door_chosen_by_host=map2_dbl(door_for_car, initial_door_chosen_by_contestant, host_selection), 
+  door_after_switching=6-initial_door_chosen_by_contestant-door_chosen_by_host ) 
+ 
+# probability of wining a car with initial choice 
+prob_wins_initial <- mean(df$initial_door_chosen_by_contestant==df$door_for_car) 
+# probability of wining a car after switching 
+prob_wins_switch <- mean(df$door_after_switching==df$door_for_car) 
+prob_wins_initial
+prob_wins_switch
+```
+
+
+
 
 
 
