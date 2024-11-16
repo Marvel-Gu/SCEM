@@ -1,0 +1,133 @@
+---
+title: "Section A"
+author: "Dingyuan Gu"
+date: "2024-11-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Section A
+
+```{r}
+library(tidyverse)
+```
+
+### Q1
+
+```{r}
+folder_path <- "C:\\Users\\levit\\Downloads\\"
+file_name1 <- "debt_data.csv"
+file_path1 <- paste(folder_path,file_name1,sep="")
+file_name2 <- "country_data.csv"
+file_path2 <- paste(folder_path,file_name2,sep="")
+file_name3 <- "indicator_data.csv"
+file_path3 <- paste(folder_path,file_name3,sep="")
+debt_df<-read_csv(file_path1, show_col_types = FALSE)
+country_df<-read_csv(file_path2, show_col_types = FALSE)
+indicator_df<-read_csv(file_path3, show_col_types = FALSE)
+
+
+dim(debt_df)
+```
+### Q2
+
+```{r}
+debt_df<- debt_df %>% arrange(desc(DT.NFL.BLAT.CD))
+
+debt_df %>% select(Country.Code, Year, NY.GNP.MKTP.CD, DT.NFL.BLAT.CD) %>% head(4)
+```
+
+### Q3
+
+```{r}
+debt_df2 <- debt_df
+
+debt_df2 <- debt_df2 %>% rename_at(vars(3:ncol(.)), ~indicator_df$INDICATOR_NAME[match(., indicator_df$INDICATOR_CODE)])
+
+debt_df2%>% select(Country.Code, Year, `Net financial flows, others (NFL, current US$)`) %>% head(5)
+```
+### Q4
+
+```{r}
+debt_df3 <- left_join(debt_df2, select(country_df, Country.Code, Region, IncomeGroup, Country.Name), by = "Country.Code")
+
+debt_df3 %>% select(Country.Name, IncomeGroup, Year, `Total reserves in months of imports`)%>%head(3)
+```
+
+### Q5
+
+```{r}
+
+
+debt_df3 <- debt_df3 %>% rename(Total_reserves = `Total reserves in months of imports`, External_debt = `External debt stocks, total (DOD, current US$)`, Financial_flow = `Net financial flows, bilateral (NFL, current US$)`, Imports = `Imports of goods, services and primary income (BoP, current US$)`, IFC = `IFC, private nonguaranteed (NFL, US$)`)
+
+debt_df3 %>% select(Total_reserves, External_debt, Financial_flow, Imports, IFC) %>% head(5)
+
+```
+
+### Q6
+
+```{r}
+debt_summary <- group_by(debt_df3, Region) %>% summarise(TR_mn=mean(Total_reserves, na.rm=TRUE),  ED_md=mean(External_debt,na.rm=TRUE), FF_quantile=quantile(Financial_flow, probs = 0.2, na.rm=TRUE), IFC_sd=sd(IFC, na.rm=TRUE))
+
+print(debt_summary)
+```
+
+### Q7
+
+```{r}
+library(ggplot2)
+
+debt_df4 <- debt_df3 %>% filter(!is.na(Financial_flow) & Financial_flow >= -10^8 & Financial_flow <= 10^8)
+
+violin_plot <- ggplot(debt_df4, aes(x =Financial_flow , y =Region , color = Region)) + geom_violin() + theme_bw() + labs(x = "Financial Flow", y = "Region") + theme_bw() + scale_fill_brewer(palette = "Set3")
+
+print(violin_plot)
+```
+
+### Q8
+
+```{r}
+# Change the year format
+debt_df3$Year <- gsub("year_", "", debt_df3$Year)
+
+countries_need <- c("Italy", "France", "United Kingdom", "Sudan", "Afghanistan", "Brazil")
+
+filtered_data <- debt_df3 %>% filter(Country.Name %in% countries_need) %>% rename(`Country Name`=Country.Name)
+
+# Remove missing values
+filtered_data <- filtered_data[!is.na(filtered_data$Total_reserves),]
+
+# Convert the Year column to a numeric data type
+filtered_data$Year <- as.numeric(as.character(filtered_data$Year))
+
+plot_line <- ggplot(data=filtered_data, aes(x=Year, y=Total_reserves, group=`Country Name`, color=`Country Name`)) + xlab("Year")+ ylab("Total Reserves") + theme_bw() + scale_x_continuous(breaks = seq(1970, max(filtered_data$Year), by = 10), limits = c(1970, max(filtered_data$Year)))
+
+plot_line+geom_line()+geom_point()+facet_wrap(~IncomeGroup)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
