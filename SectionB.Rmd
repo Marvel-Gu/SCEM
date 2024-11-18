@@ -1,0 +1,125 @@
+---
+title: "Section B"
+author: "Dingyuan Gu"
+date: "2024-11-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Section B
+
+### B.1 (1)
+
+According to the definition of probability density function:
+
+$$
+\int_{b}^{\infty} p_{\lambda } \left ( x \right ) \, dx=\int_{b}^{\infty} ae^{-\lambda \left ( x-b \right )} \,dx=1
+$$
+
+Substituting $u=x−b$: 
+
+$$\int_{b}^{\infty} ae^{-\lambda \left ( x-b \right )} \,dx=\int_{0}^{\infty} ae^{-\lambda u} \,du=a\cdot \left [ - \frac{1}{\lambda } e^{-\lambda u} \right ]_{0}^{\infty}=a\cdot \left [ 0- \left ( - \frac{1}{\lambda }  \right )  \right ] =\frac{a}{\lambda } =1
+$$
+
+So, the value of $a$ is $\lambda$.
+
+### B.1 (2)
+
+#### `population mean`
+
+According to the definition of population mean:
+
+$$
+E[X] = \int_{-\infty}^{\infty} x p_{\lambda}(x) \, dx = \int_{b}^{\infty} x a e^{-\lambda(x-b)} \, dx = \lambda\int_{b}^{\infty} xe^{-\lambda(x-b)}
+$$
+
+By partial integration:
+
+$$
+E[X] = \lambda \left[ -\frac{x}{\lambda} e^{-\lambda(x-b)} \bigg|_{b}^{\infty} + \int_{b}^{\infty} \frac{1}{\lambda} e^{-\lambda(x-b)} \, dx \right]=\lambda \left \{ \left [ 0-\left ( -\frac{b}{\lambda }  \right )  \right ] + \frac{1}{\lambda  } \left [ 0-\left ( -\frac{1}{\lambda }  \right )  \right ]   \right \} = b+\frac{1}{\lambda }
+$$
+
+So, population mean of the random variable $X$ is $b+\frac{1}{\lambda }$
+
+####  `standard deviation`
+According to the calculation formula of standard deviation: 
+$$
+\operatorname{Var}(X) = E[X^2] - (E[X])^2
+$$
+
+We need $E[X^2]$:
+
+$$
+E[X^2] = \int_{b}^{\infty} x^2 p_{\lambda}(x) \, dx = \lambda \int_{b}^{\infty} x^2 e^{-\lambda(x-b)} \, dx
+$$
+
+Using integration by parts, we get: 
+$$
+E[X^2] = \frac{2}{\lambda^2}+ \frac{2b}{\lambda} +b^2
+$$
+
+So $\operatorname{Var}(X) = E\left[X^2\right] - (E[X])^2 = \left(b^2 + \frac{2b}{\lambda} + \frac{2}{\lambda^2}\right) - \left(b + \frac{1}{\lambda}\right)^2=\frac{1}{\lambda^2}$
+
+### B.1 (3)
+
+#### `cumulative distribution function`
+
+The cumulative distribution function \( F_{\lambda}(x) \) is given by:
+
+$$ 
+F_{\lambda}(x) = \int_{-\infty}^{x} p_{\lambda}(t) \, dt 
+$$
+
+For $x < b$:
+
+$$
+F_{\lambda}(x) = 0 
+$$
+
+For $x \geq b$:
+
+$$
+F_{\lambda}(x) = \int_{b}^{x} \lambda e^{-\lambda(t-b)} \, dt= \left[ -e^{-\lambda(t-b)} \right]_{b}^{x} = 1 - e^{-\lambda(x-b)}
+$$
+
+So, cumulative distribution function is: 
+$$F_{\lambda}(x) = \begin{cases} 0 & \text{if } x < b, \\1 - e^{-\lambda(x-b)} & \text{if } x \geq b.\end{cases}
+$$
+
+#### `quantile function`
+
+For the quantile function $Q(p)$: Calculating $F_{\lambda}(x) = p$
+
+$$
+1 - e^{-\lambda(x-b)} = p \Longrightarrow e^{-\lambda(x-b)} = 1 - p $$
+
+Taking the natural logarithm:
+
+$$
+-\lambda(x-b) = \ln(1-p) \Longrightarrow x = b - \frac{1}{\lambda}\ln(1-p)
+$$
+
+So, the quantile function is:
+
+$$ Q(p) = b - \frac{1}{\lambda}\ln(1-p)
+$$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
