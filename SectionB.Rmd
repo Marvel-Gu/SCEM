@@ -47,7 +47,7 @@ So, population mean of the random variable $X$ is $b+\frac{1}{\lambda }$
 ####  `standard deviation`
 According to the calculation formula of standard deviation: 
 $$
-\operatorname{Var}(X) = E[X^2] - (E[X])^2
+\sigma(X) = \sqrt{\operatorname{Var}(X)} = \sqrt{E\left[X^2\right] - [E(X)]^2}
 $$
 
 We need $E[X^2]$:
@@ -61,7 +61,7 @@ $$
 E[X^2] = \frac{2}{\lambda^2}+ \frac{2b}{\lambda} +b^2
 $$
 
-So $\operatorname{Var}(X) = E\left[X^2\right] - (E[X])^2 = \left(b^2 + \frac{2b}{\lambda} + \frac{2}{\lambda^2}\right) - \left(b + \frac{1}{\lambda}\right)^2=\frac{1}{\lambda^2}$
+So $\sigma(X) = \sqrt{E\left[X^2\right] - (E[X])^2} = \sqrt{\left(b^2 + \frac{2b}{\lambda} + \frac{2}{\lambda^2}\right) - \left(b + \frac{1}{\lambda}\right)^2}=\frac{1}{\lambda}$
 
 ### B.1 (3)
 
@@ -225,26 +225,229 @@ plot(sample_sizes, mse_values, pch = 19, cex=0.5,
 
 ```
 
+### B.2 (1)
+
+There are three possible values for X: 2, 0, -2. If we draw 2 red balls, X=2; If we draw 1 red ball and 1 blue ball, X=0; If we draw 2 blue balls, X=-2.
+
+1. $X = 2$:
+$$
+P(X=2) = \frac{a}{a+b} \cdot \frac{a-1}{a+b-1}
+$$
+2. $X = 0$:
+$$
+P(X=0) = \frac{a}{a+b} \cdot \frac{b}{a+b-1} + \frac{b}{a+b} \cdot \frac{a}{a+b-1} = 2 \cdot \frac{a}{a+b} \cdot \frac{b}{a+b-1}
+$$
+3. $X = -2$:
+$$
+P(X=-2) = \frac{b}{a+b} \cdot \frac{b-1}{a+b-1}
+$$
+
+Thus, the probability mass function $p_X$ is given by:
+
+$$ 
+p_X(x) = \begin{cases} 
+\frac{a(a-1)}{(a+b)(a+b-1)} & \text{if } x = 2 \\
+ \frac{2ab}{(a+b)(a+b-1)} & \text{if } x = 0 \\
+\frac{b(b-1)}{(a+b)(a+b-1)} & \text{if } x = -2 \\
+0 & \text{otherwise}
+\end{cases} 
+$$
+
+### B.2 (2)
+
+$$E(X) = 2 \cdot P(X=2) + 0 \cdot P(X=0) - 2 \cdot P(X=-2)\\
+= 2 \cdot \frac{a(a-1)}{(a+b)(a+b-1)} - 2 \cdot \frac{b(b-1)}{(a+b)(a+b-1)}\\
+= \frac{2(a^2-a - b^2+b)}{(a+b)(a+b-1)}
+$$
 
 
+### B.2 (3)
+$$
+\operatorname{Var}(X) =E\left[X^2\right] - [E(X)]^2
+$$
+
+Calculating $E(X^2)$:
+
+$$ E(X^2) = 2^2 \cdot P(X=2) + 0^2 \cdot P(X=0) + (-2)^2 \cdot P(X=-2) \\=4 \cdot \frac{a(a-1)}{(a+b)(a+b-1)} + 4 \cdot \frac{b(b-1)}{(a+b)(a+b-1)} \\ = \frac{4(a(a-1) + b(b-1))}{(a+b)(a+b-1)} 
+$$
+
+Now, substituting into the variance formula:
+
+$$ 
+\text{Var}(X) = \frac{4(a(a-1) + b(b-1))}{(a+b)(a+b-1)} - \left[\frac{2(a^2-a - b^2+b)}{(a+b)(a+b-1)}\right]^2 
+$$
+
+### B.2 (4)
 
 
+```{r}
+compute_expectation_X <- function(a, b) {
+  (2 * (a^2-a-b^2+b)) / ((a + b) * (a + b - 1))
+}
+
+compute_variance_X <- function(a, b) {
+  E_X <- compute_expectation_X(a, b)
+  E_X2 <- (4 * (a * (a - 1) + b * (b - 1))) / ((a + b) * (a + b - 1))
+  return(E_X2 - E_X^2)
+}
+
+```
+
+### B.2 (5)
+
+$$
+E(\bar{X})=E\left(\frac{1}{n}\sum_{i=1}^{n}X_{i}\right)=\frac{1}{n}\sum_{i=1}^{n}E(X_{i})\\=E(X)=\frac{2(a^2-a - b^2+b)}{(a+b)(a+b-1)}
+$$
 
 
+### B.2 (6)
+
+The variance of the sample mean $\bar{X}$:
+
+$$
+Var(\bar{X}) = Var\left(\frac{1}{n}\sum_{i=1}^{n}X_{i}\right) = \frac{1}{n^{2}}\sum_{i=1}^{n}Var(X_{i}) = \frac{Var(X)}{n}\\=\frac{1}{n} \cdot \left \{ \frac{4(a(a-1) + b(b-1))}{(a+b)(a+b-1)} - \left[\frac{2(a^2-a - b^2+b)}{(a+b)(a+b-1)}\right]^2 \right \} 
+$$
+
+### B.2 (7)
+
+```{r}
+p_X <- function(a, b) {
+  p_2 <- a * (a - 1) / ((a + b) * (a + b - 1))
+  p_0 <- 2 * (a * b) / ((a + b) * (a + b - 1))
+  p_neg2 <- b * (b - 1) / ((a + b) * (a + b - 1))
+  return(c(p_2, p_0, p_neg2))
+}
+
+sample_Xs <- function(a, b, n) {
+  samples <- numeric(n)
+  for (i in 1:n) {
+    draw <- sample(c(2, 0, -2), 1, prob = p_X(a, b))
+    samples[i] <- draw
+  }
+  return(samples)
+}
+```
+
+### B.2 (8)
+
+```{r}
+# Set parameters
+a <- 3
+b <- 5
+n <- 100000
+
+E_X <- compute_expectation_X(a, b)
+Var_X <- compute_variance_X(a, b)
+
+num_simulations <- 100
+
+sample_means <- numeric(num_simulations)
+sample_variances <- numeric(num_simulations)
+
+# 50 simulations
+for (i in 1:num_simulations) {
+  samples <- sample_Xs(a, b, n)
+  sample_means[i] <- mean(samples)
+  sample_variances[i] <- var(samples)
+}
+
+cat("E(X):", E_X, "\n")
+cat("Var(X):", Var_X, "\n")
+
+# par(mfrow = c(1, 2))
+
+# mean dot plot
+plot(sample_means, col = "blue", pch = 19, xlab = "Simulation Index",
+     ylab = "Sample Mean", main = "Sample Means Simulations",
+     ylim = range(c(sample_means, E_X)) + c(-0.06, 0.06)) 
+abline(h = E_X, col = "red", lwd = 2, lty = 2) 
+legend("topright", legend = "Theoretical Mean", col = "red", lty = 2, lwd = 2)
+
+# variance dot plot
+plot(sample_variances, col = "green", pch = 19, xlab = "Simulation Index",
+     ylab = "Sample Variance", main = "Sample Variances Simulations",
+     ylim = range(c(sample_variances, Var_X)) + c(-0.06, 0.06))
+abline(h = Var_X, col = "red", lwd = 2, lty = 2)
+legend("topright", legend = "Theoretical Variance", col = "red", lty = 2, lwd = 2)
+
+mean_bias <- sample_means - E_X
+variance_bias <- sample_variances - Var_X
 
 
+mean_bias_summary <- list(
+  MeanBias = mean(mean_bias),         
+  MeanBiasSD = sd(mean_bias) 
+)
+
+variance_bias_summary <- list(
+  VarianceBias = mean(variance_bias),
+  VarianceBiasSD = sd(variance_bias)  
+)
+
+print(mean_bias_summary)
+print(variance_bias_summary)
+
+```
+
+With a sample size of 100,000, I simulated 100 times and plotted the corresponding dot plots. Based on the simulated data, the average deviation between the sample mean $\bar{X}$ and the theoretical mean $E(X)$ is about 7e-06, and the average deviation between the sample variance and the theoretical variance $Var(X)$ is about 0.001, which are very very close.(**The deviations mentioned here will vary depending on the simulation results, and are only approximate**)
+
+### B.2 (9)
+
+```{r}
+a <- 3
+b <- 5
+n <- 100
+trials <- 50000
+
+simulate_sample_means <- function(a, b, n, trials) {
+  sample_means <- numeric(trials)
+  
+  for (i in 1:trials) {
+    samples <- sample_Xs(a, b, n)
+    sample_means[i] <- mean(samples)
+  }
+  
+  return(sample_means)
+}
+
+sample_means <- simulate_sample_means(a, b, n, trials)
+
+```
+
+### B.2 (10)
 
 
+```{r}
+E_X <- compute_expectation_X(a, b)
+Var_X <- compute_variance_X(a, b)
+sigma <- sqrt(Var_X / n)
+
+# Generate scatter values
+x_values <- seq(E_X - 3 * sigma, E_X + 3 * sigma, by = 0.1)
+
+# Calculate kernel density
+normal_density <- dnorm(x_values, mean = E_X, sd = sigma)
+
+sample_means <- simulate_sample_means(a, b, n, trials)
+
+density_sample_means <- density(sample_means)
+
+plot(density_sample_means, main = "Kernel Density of Sample Means with Scatter Points", xlab = "Value", ylab = "Density", col = "blue", lwd = 2)
+
+lines(x_values, normal_density, col = "red", lwd = 2)
+
+points(x_values, normal_density, col = "green", pch = 16)
+
+legend("topright", legend = c("Kernel Density of Sample Means", "Normal Density", "Scatter Points"), col = c("blue", "red", "green"), pch = c(NA, NA, 16), lwd = c(2, 2, NA))
 
 
+```
 
+### B.2 (11)
 
+- The kernel density estimates of the sample means (blue curves) are very close to the theoretical normally distributed densities (red curves), indicating that the distribution of the sample means tends to be normally distributed as the sample size increases, as expected from the central limit theorem.
 
-
-
-
-
-
+- The scatter point (green point) shows the theoretical density value at this location, showing an overlap with the blue and red curves, further verifying the consistency between the kernel density estimate of the sample mean and the theoretical density.
 
 
 
