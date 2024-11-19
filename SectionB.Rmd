@@ -107,6 +107,131 @@ So, the quantile function is:
 $$ Q(p) = b - \frac{1}{\lambda}\ln(1-p)
 $$
 
+### B.1 (4)
+
+
+For independent copies $x_1, x_2, \ldots, x_n$，likelihood estimate is :
+
+$$
+L(\lambda) = \prod_{i=1}^n \left( \lambda e^{-\lambda(x_i - b)} \right) =\lambda^n e^{-\lambda \sum_{i=1}^n (x_i - b)}
+$$
+
+
+Taking the natural logarithm:
+
+$$
+\ln(L(\lambda)) = n \ln(\lambda) - \lambda \sum_{i=1}^n (x_i - b)
+$$
+
+
+Derivation:
+
+$$
+\frac{\partial \ln(L(\lambda))}{\partial \lambda}  = \frac{n}{\lambda} - \sum_{i=1}^n (x_i - b)
+$$
+
+Set the derivative equal to zero:
+
+$$
+\frac{n}{\lambda} - \sum_{i=1}^n (x_i - b) = 0
+$$
+$$
+\frac{n}{\lambda} = \sum_{i=1}^n (x_i - b) 
+$$
+$$
+\lambda = \frac{n}{\sum_{i=1}^n (x_i - b)}
+$$
+
+
+So the maximum likelihood estimate $\lambda_{\text{MLE}} = \frac{n}{\sum_{i=1}^{n}(x_i - b)}$
+
+
+### B.1 (5)
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+folder_path <- "C:\\Users\\levit\\Downloads\\"
+file_name <- "supermarket_data_2024.csv"
+file_path <- paste(folder_path,file_name,sep="")
+time_df<-read_csv(file_path, show_col_types = FALSE)
+time_df%>%head(5) # check
+
+n <- nrow(time_df)
+print(n)
+
+b <- 300
+
+time_df1<-time_df
+
+time_df1 <- time_df1 %>%
+  mutate(x_ib = TimeLength - b) %>%
+  summarise(sum_x_ib = sum(x_ib))
+
+lambda_mle <- n / time_df1$sum_x_ib
+print(lambda_mle)
+```
+So the value of $\lambda_{\text{MLE}}$ is 0.01988426.
+
+### B.1 (6)
+
+```{r}
+n_resamples <- 10000
+lambda_mle_bootstrap <- numeric(n_resamples)
+
+set.seed(666)
+
+for (i in 1:n_resamples) {
+  # Resampling and compute new lambda_mle
+  sample <- sample(time_df$TimeLength, n, replace = TRUE)  
+  lambda_mle_bootstrap[i] <- length(sample) / sum(sample-300)
+}
+
+lower_bound <- quantile(lambda_mle_bootstrap, 0.025)
+upper_bound <- quantile(lambda_mle_bootstrap, 0.975)
+
+cat("a confidence level 0f 95%: (", lower_bound, ", ", upper_bound, ")\n", sep = "")
+
+```
+
+### B.1 (7)
+
+```{r}
+b <- 0.01
+true_lambda <- 2
+sample_sizes <- seq(100, 5000, by = 10)
+mse_values <- numeric(length(sample_sizes))
+
+set.seed(666)
+
+for (i in 1:length(sample_sizes)) {
+  n <- sample_sizes[i]
+  mle_estimates <- numeric(100)
+  
+  for (j in 1:100) {
+    X <- rexp(n, rate = true_lambda) + b
+    lambda_mle1 <- n / sum(X - b)
+    mle_estimates[j] <- lambda_mle1
+  }
+  
+  mse_values[i] <- mean((mle_estimates - true_lambda)^2)
+}
+
+plot(sample_sizes, mse_values, pch = 19, cex=0.5,
+     xlab = "Sample Size", ylab = "Mean Squared Error (MSE)",
+     main = "MSE of Maximum Likelihood Estimator")
+
+```
+
+
+
+
+
+
+
+
 
 
 
